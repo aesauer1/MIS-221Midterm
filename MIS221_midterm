@@ -1,0 +1,397 @@
+import random
+
+
+def display_menu(doubloons, reputation):
+    print()
+    print("=" * 40)
+    print("  Captains Cove - Main Menu")
+    print("=" * 40)
+    print(f"  Doubloons: {doubloons}          Reputation: {reputation}")
+    print("-" * 40)
+    print("1. Dice Duel")
+    print("2. Hire the Fleet")
+    print("3. Leave the Cove")
+
+
+def show_status(doubloons, reputation):
+    print(f"Dobloons: {doubloons}          Reputation: {reputation}")
+
+
+def ask_yes_no(prompt):
+    while True:
+        answer = input(prompt)
+        if answer == "yes" or answer == "no":
+            return answer
+        print("Please type yes or no.")
+
+
+def show_session(start, doubloons, reputation):
+    change = doubloons - start
+    if change > 0:
+        print(
+            f"This session: +{change} doubloons.   Doubloons: {doubloons}   Reputation: {reputation}")
+    else:
+        print(
+            f"This session: {change} doubloons.   Doubloons: {doubloons}   Reputation: {reputation}")
+
+
+def show_dice_rules():
+    print()
+    print("-"*15)
+    print("Dice Duel Rules")
+    print("-"*15)
+    print("* Six sided dice. A 6 is worth 10. Every other face is worth what it shows.")
+    print("* A 1 can count as 1 or 11, you choose when you roll it.")
+    print("* Place your wager, then open with 2 dice")
+    print("* Roll one more die as many times as you like. Go over 21 and you bust")
+    print("* The rival rolls after you and must stop once it reaches 17 or more.")
+    print("* If the rival busts, you win. The rival wins every tie,")
+    print("  except a Full Broadside (exactly 21) which beats the rival on a tie.")
+
+
+def roll_die():
+    return random.randint(1, 6)
+
+
+def show_face(face):
+    if face == 6:
+        return "6(= 10)"
+    else:
+        return str(face)
+
+
+def captain_points(face):
+    if face == 6:
+        return 10
+    elif face == 1:
+        while True:
+            choice = input("You rolled a 1. Count it as 1 or 11? ")
+            if choice == "1":
+                return 1
+            elif choice == "11":
+                return 11
+            else:
+                print("Please type 1 or 11.")
+    else:
+        return face
+
+
+def rival_points(face, total):
+    if face == 6:
+        return 10
+    elif face == 1:
+        if total + 11 <= 21:
+            return 11
+        else:
+            return 1
+    else:
+        return face
+
+
+def play_dice_hand(doubloons):
+    while True:
+        text = input("Place your wager: ")
+        if text.isdigit():
+            wager = int(text)
+            if wager >= 1 and wager <= doubloons:
+                break
+        print(f"Invaid wager. Enter a whole number from 1 to {doubloons}.")
+
+    die1 = roll_die()
+    die2 = roll_die()
+    print()
+    print(f"You roll: {show_face(die1)} and {show_face(die2)}")
+    total = captain_points(die1) + captain_points(die2)
+    print(f"Your total:{total}")
+
+    while True:
+        again = ask_yes_no("Roll another?(yes/no):")
+        if again == "yes":
+            die = roll_die()
+            print(f"You roll: {show_face(die)}")
+            total = total + captain_points(die)
+            print(f"Your total: {total}")
+            if total > 21:
+                print(f"You bust with {total}.")
+                break
+        else:
+            print(f"You stand on {total}.")
+            break
+
+    rival_total = 0
+    if total <= 21:
+        rival1 = roll_die()
+        rival2 = roll_die()
+        rival_total = rival_points(rival1, 0)
+        rival_total = rival_total + rival_points(rival2, rival_total)
+        print()
+        print(
+            f"Rival opens: {show_face(rival1)} and {show_face(rival2)}     total {rival_total} ")
+        while rival_total < 17:
+            rival_die = roll_die()
+            rival_total = rival_total + rival_points(rival_die, rival_total)
+            print(
+                f"Rival rolls: {show_face(rival_die)}              total {rival_total}")
+        if rival_total > 21:
+            print(f"The rival busts with{rival_total}.")
+        else:
+            print(f"Rival stands on{rival_total}")
+
+    print()
+    if total > 21:
+        print(
+            f"You busted. The rival takes the hand.  You lose {wager} doubloons.")
+        doubloons = doubloons - wager
+    elif rival_total > 21:
+        print(f"The rival busts! You win {wager} doubloons.")
+        doubloons = doubloons + wager
+    elif total > rival_total:
+        print(f"You take the hand! You win {wager} doubloons.")
+        doubloons = doubloons + wager
+    elif total == 21 and rival_total == 21:
+        print(f"Full Broadside! You win {wager} doubloons.")
+        doubloons = doubloons + wager
+    else:
+        print(f"The rival takes the hand. You lose {wager} doubloons.")
+        doubloons = doubloons - wager
+
+    return doubloons
+
+
+def dice_duel(doubloons, reputation):
+    show_dice_rules()
+    start = doubloons
+    while True:
+        print()
+        print("-" * 11, "Dice Duel", "-" * 11)
+        show_status(doubloons, reputation)
+        doubloons = play_dice_hand(doubloons)
+        show_status(doubloons, reputation)
+        if doubloons <= 0:
+            break
+        print()
+        again = ask_yes_no("Keep playing Dice Duel? (yes/no): ")
+        if again == "no":
+            break
+    show_session(start, doubloons, reputation)
+    return doubloons
+
+
+def show_fleet_rules():
+    print()
+    print("-" * 15)
+    print("Hire the Fleet Rules")
+    print("-" * 15)
+    print("* Hire 1, 2, or 3 different ships. Every hire fee are paid up front.")
+    print("* Then one of five encounters is drawn at random.")
+    print("* If you hired the ship it calls for, you earn that ships reputation.")
+    print("* If not the penalty lands:")
+    print("    Merchant Convoy (Sloop)       - nothing happens, the fees are gone")
+    print("    Naval Patrol (Brigantine)     - pay 3 doubloons in fines")
+    print("    Cursed Fog (Frigate)         - randomly gain or lose 5 reputations")
+    print("    Rival Armada (Galleon)        - lose 5 reputation")
+    print("    The Kraken (Man-o'-War)      - lose ALL your doubloons :()")
+    print("* Reputation never drops below 0.")
+
+
+def show_ships():
+    print()
+    print("Ships for hire:          cost    rep")
+    print("  1. Sloop                  2      4")
+    print("  2. Brigantine             3      6")
+    print("  3. Frigate                4      8")
+    print("  4. Galleon                5     10")
+    print("  5. Man-o'-War             6     12")
+
+
+def ship_name(num):
+    if num == 1:
+        return "Sloop"
+    elif num == 2:
+        return "Brigantine"
+    elif num == 3:
+        return "Frigate"
+    elif num == 4:
+        return "Galleon"
+    else:
+        return "Man- o'War"
+
+
+def ship_cost(num):
+    if num == 1:
+        return 2
+    elif num == 2:
+        return 3
+    elif num == 3:
+        return 4
+    elif num == 4:
+        return 5
+    else:
+        return 6
+
+
+def ship_rep(num):
+    if num == 1:
+        return 4
+    elif num == 2:
+        return 6
+    elif num == 3:
+        return 8
+    elif num == 4:
+        return 10
+    else:
+        return 12
+
+
+def encounter_name(num):
+    if num == 1:
+        return "MERCHANT CONVOY"
+    elif num == 2:
+        return "NAVAL PATROL"
+    elif num == 3:
+        return "CURSED FOG"
+    elif num == 4:
+        return "RIVAL ARMANDA"
+    else:
+        return "THE KRAKEN"
+
+
+def play_voyage(doubloons, reputation):
+    show_ships()
+    print()
+
+    while True:
+        text = input("Hire how many ships (1-3)? ")
+        if text == "1" or text == "2" or text == "3":
+            count = int(text)
+            break
+        print("Please enter 1, 2, or 3.")
+
+    ship1 = 0
+    ship2 = 0
+    ship3 = 0
+    spent = 0
+    pick = 1
+    while pick <= count:
+        text = input(f"Ship {pick}: ")
+        if pick > 1 and text == "0":
+            print("You stop hiring.")
+            break
+
+        elif not text.isdigit() or int(text) < 1 or int(text) > 5:
+            print("Please enter a ship number from 1 to 5.")
+        elif int(text) == ship1 or int(text) == ship2 or int(text) == ship3:
+            print("You already hired that ship. Pick a different one.")
+        elif spent + ship_cost(int(text)) > doubloons:
+            if pick > 1:
+                print(
+                    "You can't afford that ship. Pick a cheaper one, or 0 to stop hiring.")
+            else:
+                print("You can't afford that ship. Pick a cheaper one.")
+        else:
+            num = int(text)
+
+            if pick == 1:
+                ship1 = num
+            elif pick == 2:
+                ship2 = num
+            else:
+                ship3 = num
+            spent = spent + ship_cost(num)
+            pick = pick + 1
+
+    hired = ship_name(ship1)
+    if ship2 != 0:
+        hired = hired + ", " + ship_name(ship2)
+    if ship3 != 0:
+        hired = hired + ", " + ship_name(ship3)
+
+    doubloons = doubloons - spent
+    print(f"Hired: {hired}        -{spent} doubloons")
+
+    draw = random.randint(1, 5)
+    print()
+    print(f"The lookout cries out...  {encounter_name(draw)}")
+
+    if draw == ship1 or draw == ship2 or draw == ship3:
+
+        print(f"Your {ship_name(draw)} answers the call.")
+        print(f"+{ship_rep(draw)} reputation")
+        reputation = reputation + ship_rep(draw)
+    elif draw == 1:
+        print("No Sloop to meet the convoy. Your hire fees are simply gone.")
+    elif draw == 2:
+        print("No Brigantine to answer the patrol. You pay 3 dobloons in fines.")
+        doubloons = doubloons - 3
+        if doubloons < 0:
+            doubloons = 0
+    elif draw == 3:
+        coin = random.randint(1, 2)
+        if coin == 1:
+            print("The fog lifts in your favor! +5 reputation")
+            reputation = reputation + 5
+        else:
+            print("The fog swallows your name. -5 reputation")
+            reputation = reputation - 5
+    elif draw == 4:
+        print("No Galleon to face the armada. -5 reputation")
+        reputation = reputation - 5
+    else:
+        print(
+            "No Man-o'-War! The fleet is dragged under. You lose every doubloon:( ")
+        doubloons = 0
+
+    if reputation < 0:
+        reputation = 0
+
+    print()
+    show_status(doubloons, reputation)
+    return doubloons, reputation
+
+
+def hire_the_fleet(doubloons, reputation):
+    show_fleet_rules()
+    start = doubloons
+    while True:
+        print()
+        print("-" * 9, "Hire the Fleet", "-" * 9)
+        show_status(doubloons, reputation)
+        if doubloons < 2:
+            print("You need at least 2 doubloons to hire a ship. Try the Dice Duel.")
+            break
+        doubloons, reputation = play_voyage(doubloons, reputation)
+        if reputation >= 30 or doubloons <= 0:
+            break
+        print()
+        again = ask_yes_no("Keep playing Hire the Fleet? (yes/no): ")
+        if again == "no":
+            break
+    show_session(start, doubloons, reputation)
+    return doubloons, reputation
+
+
+# main
+doubloons = 12
+reputation = 0
+while True:
+    display_menu(doubloons, reputation)
+    choice = input("Enter your choice: ")
+    if choice == "1":
+        doubloons = dice_duel(doubloons, reputation)
+    elif choice == "2":
+        doubloons, reputation = hire_the_fleet(doubloons, reputation)
+    elif choice == "3":
+        print("Fair winds, Captain.")
+        break
+    else:
+        print("Invalid selection. Please choose 1, 2, or 3.")
+
+    if reputation >= 30:
+        print()
+        print(
+            f"Congratulations, Captain! With {reputation} reputation, your name is in the harbor master's ledger.")
+        break
+    if doubloons <= 0:
+        print()
+        print("Your doubloons are gone. The run ends here, Captain.")
+        break
