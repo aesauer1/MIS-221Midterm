@@ -4,7 +4,7 @@ import random
 def display_menu(doubloons, reputation):
     print()
     print("=" * 40)
-    print("  Captains Cove - Main Menu")
+    print("  Captain's Cove - Main Menu")
     print("=" * 40)
     print(f"  Doubloons: {doubloons}          Reputation: {reputation}")
     print("-" * 40)
@@ -14,7 +14,7 @@ def display_menu(doubloons, reputation):
 
 
 def show_status(doubloons, reputation):
-    print(f"Dobloons: {doubloons}          Reputation: {reputation}")
+    print(f"Doubloons: {doubloons}          Reputation: {reputation}")
 
 
 def ask_yes_no(prompt):
@@ -95,17 +95,19 @@ def play_dice_hand(doubloons):
             wager = int(text)
             if wager >= 1 and wager <= doubloons:
                 break
-        print(f"Invaid wager. Enter a whole number from 1 to {doubloons}.")
+        print(f"Invalid wager. Enter a whole number from 1 to {doubloons}.")
 
     die1 = roll_die()
     die2 = roll_die()
     print()
     print(f"You roll: {show_face(die1)} and {show_face(die2)}")
     total = captain_points(die1) + captain_points(die2)
-    print(f"Your total:{total}")
+    print(f"Your total: {total}")
 
-    while True:
-        again = ask_yes_no("Roll another?(yes/no):")
+    if total > 21:
+        print(f"You bust with {total}.")
+    while total <= 21:
+        again = ask_yes_no("Roll another? (yes/no): ")
         if again == "yes":
             die = roll_die()
             print(f"You roll: {show_face(die)}")
@@ -113,7 +115,6 @@ def play_dice_hand(doubloons):
             print(f"Your total: {total}")
             if total > 21:
                 print(f"You bust with {total}.")
-                break
         else:
             print(f"You stand on {total}.")
             break
@@ -133,14 +134,14 @@ def play_dice_hand(doubloons):
             print(
                 f"Rival rolls: {show_face(rival_die)}              total {rival_total}")
         if rival_total > 21:
-            print(f"The rival busts with{rival_total}.")
+            print(f"The rival busts with {rival_total}.")
         else:
-            print(f"Rival stands on{rival_total}")
+            print(f"Rival stands on {rival_total}")
 
     print()
     if total > 21:
         print(
-            f"You busted. The rival takes the hand.  You lose {wager} doubloons.")
+            f"You busted. The rival takes the hand. You lose {wager} doubloons.")
         doubloons = doubloons - wager
     elif rival_total > 21:
         print(f"The rival busts! You win {wager} doubloons.")
@@ -179,18 +180,18 @@ def dice_duel(doubloons, reputation):
 
 def show_fleet_rules():
     print()
-    print("-" * 15)
+    print("-" * 20)
     print("Hire the Fleet Rules")
-    print("-" * 15)
-    print("* Hire 1, 2, or 3 different ships. Every hire fee are paid up front.")
+    print("-" * 20)
+    print("* Hire 1, 2, or 3 different ships. Every hire fee is paid up front.")
     print("* Then one of five encounters is drawn at random.")
-    print("* If you hired the ship it calls for, you earn that ships reputation.")
-    print("* If not the penalty lands:")
+    print("* If you hired the ship it calls for, you earn that ship's reputation.")
+    print("* If not, the penalty lands:")
     print("    Merchant Convoy (Sloop)       - nothing happens, the fees are gone")
     print("    Naval Patrol (Brigantine)     - pay 3 doubloons in fines")
-    print("    Cursed Fog (Frigate)         - randomly gain or lose 5 reputations")
+    print("    Cursed Fog (Frigate)         - randomly gain or lose 5 reputation")
     print("    Rival Armada (Galleon)        - lose 5 reputation")
-    print("    The Kraken (Man-o'-War)      - lose ALL your doubloons :()")
+    print("    The Kraken (Man-o'-War)      - lose ALL your doubloons")
     print("* Reputation never drops below 0.")
 
 
@@ -214,7 +215,7 @@ def ship_name(num):
     elif num == 4:
         return "Galleon"
     else:
-        return "Man- o'War"
+        return "Man-o'-War"
 
 
 def ship_cost(num):
@@ -251,7 +252,7 @@ def encounter_name(num):
     elif num == 3:
         return "CURSED FOG"
     elif num == 4:
-        return "RIVAL ARMANDA"
+        return "RIVAL ARMADA"
     else:
         return "THE KRAKEN"
 
@@ -321,7 +322,7 @@ def play_voyage(doubloons, reputation):
     elif draw == 1:
         print("No Sloop to meet the convoy. Your hire fees are simply gone.")
     elif draw == 2:
-        print("No Brigantine to answer the patrol. You pay 3 dobloons in fines.")
+        print("No Brigantine to answer the patrol. You pay 3 doubloons in fines.")
         doubloons = doubloons - 3
         if doubloons < 0:
             doubloons = 0
@@ -354,7 +355,7 @@ def hire_the_fleet(doubloons, reputation):
     start = doubloons
     while True:
         print()
-        print("-" * 9, "Hire the Fleet", "-" * 9)
+        print("-" * 10, "Hire the Fleet", "-" * 10)
         show_status(doubloons, reputation)
         if doubloons < 2:
             print("You need at least 2 doubloons to hire a ship. Try the Dice Duel.")
@@ -381,7 +382,9 @@ while True:
     elif choice == "2":
         doubloons, reputation = hire_the_fleet(doubloons, reputation)
     elif choice == "3":
+        print()
         print("Fair winds, Captain.")
+        print()
         break
     else:
         print("Invalid selection. Please choose 1, 2, or 3.")
